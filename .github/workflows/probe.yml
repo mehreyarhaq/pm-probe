@@ -1,0 +1,31 @@
+name: pm-probe
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show runner IP
+        run: |
+          echo "=== Runner public IP ==="
+          curl -s https://api.ipify.org
+          echo
+          echo "=== Runner geo (ipinfo) ==="
+          curl -s https://ipinfo.io
+
+      - name: Probe Polymarket geoblock
+        run: |
+          echo "=== /api/geoblock ==="
+          curl -sS -o body.json -w "HTTP %{http_code}\n" https://polymarket.com/api/geoblock || true
+          echo "--- body ---"
+          cat body.json || echo "(no body)"
+          echo
+
+      - name: Probe Gamma API
+        run: |
+          echo "=== gamma-api /markets?limit=1 ==="
+          curl -sS -o gamma.json -w "HTTP %{http_code}\n" "https://gamma-api.polymarket.com/markets?limit=1" || true
+          echo "--- first 500 chars ---"
+          head -c 500 gamma.json || echo "(no body)"
+          echo
